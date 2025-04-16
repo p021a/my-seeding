@@ -1,6 +1,7 @@
 const db = require("../connection");
 const format = require("pg-format");
 const { convertTimestampToDate, createRef } = require("./utils");
+const data = require("../data/development-data/index");
 
 const seed = ({ topicData, userData, articleData, commentData }) => {
   return db
@@ -115,5 +116,10 @@ const seed = ({ topicData, userData, articleData, commentData }) => {
       return db.query(insertComments);
     });
 };
+
+seed(data).then(() => {
+  console.log("Seeding complete");
+  return db.end();
+});
 
 module.exports = seed;
