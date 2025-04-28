@@ -71,7 +71,7 @@ describe("GET /api/articles/:article_id", () => {
   });
 });
 
-describe("when the article_id does not exist", () => {
+describe("when the article_id does not exist ", () => {
   test("404: responds with Article not found", () => {
     return request(app)
       .get("/api/articles/2000")
