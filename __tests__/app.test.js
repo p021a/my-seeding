@@ -38,7 +38,7 @@ describe("GET /api/topics", () => {
   });
 });
 
-describe("when the topics does not exist", () => {
+describe("when the endpoint does not exist", () => {
   test("404: responds with 'Path not found' when given an invalid endpoint", () => {
     return request(app)
       .get("/api/invalid")
@@ -55,29 +55,35 @@ describe("GET /api/articles/:article_id", () => {
       .get("/api/articles/1")
       .expect(200)
       .then((response) => {
-        expect(response.body.article).toEqual(
-          expect.objectContaining({
-            author: expect.any(String),
-            title: expect.any(String),
-            article_id: expect.any(Number),
-            body: expect.any(String),
-            topic: expect.any(String),
-            created_at: expect.any(String),
-            votes: expect.any(Number),
-            article_img_url: expect.any(String),
-          })
-        );
+        expect(response.body.article).toEqual({
+          author: "butter_bridge",
+          title: "Living in the shadow of a great man",
+          article_id: 1,
+          body: "I find this existence challenging",
+          topic: "mitch",
+          created_at: "2020-07-09T20:11:00.000Z",
+          votes: 100,
+          article_img_url:
+            "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+        });
       });
   });
-});
 
-describe("when the article_id does not exist ", () => {
-  test("404: responds with Article not found", () => {
+  test("404: responds with Article not found when article_id doesnt exist", () => {
     return request(app)
       .get("/api/articles/2000")
       .expect(404)
       .then((response) => {
         expect(response.body.msg).toBe("Article not found");
+      });
+  });
+
+  test("400: responds with Bad request when article_id is invalid", () => {
+    return request(app)
+      .get("/api/articles/notANumber")
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Bad request");
       });
   });
 });
