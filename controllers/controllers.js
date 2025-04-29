@@ -1,5 +1,10 @@
+const articles = require("../db/data/test-data/articles");
 const endPoints = require("../endpoints.json");
-const { fetchTopics, receivedArticleById } = require("../models/models");
+const {
+  fetchTopics,
+  receivedArticleById,
+  fetchArticles,
+} = require("../models/models");
 
 exports.getApi = (req, res) => {
   res.status(200).send({ endpoints: endPoints });
@@ -10,7 +15,9 @@ exports.getTopics = (req, res, next) => {
     .then((topics) => {
       res.status(200).send({ topics });
     })
-    .catch(next);
+    .catch((err) => {
+      next(err);
+    });
 };
 
 exports.getArticleById = (req, res, next) => {
@@ -18,6 +25,16 @@ exports.getArticleById = (req, res, next) => {
   receivedArticleById(article_id)
     .then((article) => {
       res.status(200).send({ article });
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
+exports.getArticles = (req, res, next) => {
+  fetchArticles()
+    .then((articles) => {
+      res.status(200).send({ articles });
     })
     .catch((err) => {
       next(err);

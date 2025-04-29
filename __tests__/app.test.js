@@ -36,6 +36,15 @@ describe("GET /api/topics", () => {
         });
       });
   });
+
+  test("404: responds with 'Not found' when the endpoint is incorrect", () => {
+    return request(app)
+      .get("/api/topiks")
+      .expect(404)
+      .then((response) => {
+        expect(response.body.msg).toBe("Path not found");
+      });
+  });
 });
 
 describe("when the endpoint does not exist", () => {
@@ -84,6 +93,42 @@ describe("GET /api/articles/:article_id", () => {
       .expect(400)
       .then((response) => {
         expect(response.body.msg).toBe("Bad request");
+      });
+  });
+});
+
+describe("GET /api/articles", () => {
+  test("200: responds with an array of article objects, each containing correct properties", () => {
+    return request(app)
+      .get("/api/articles")
+      .expect(200)
+      .then((response) => {
+        const articles = response.body.articles;
+        expect(Array.isArray(articles)).toBe(true);
+        expect(articles.length).toBeGreaterThan(0);
+        articles.forEach((article) => {
+          expect(article).toEqual(
+            expect.objectContaining({
+              author: expect.any(String),
+              title: expect.any(String),
+              article_id: expect.any(Number),
+              topic: expect.any(String),
+              created_at: expect.any(String),
+              votes: expect.any(Number),
+              article_img_url: expect.any(String),
+              comment_count: expect.any(String),
+            })
+          );
+        });
+      });
+  });
+
+  test("404: responds with 'path not found' for invalid endpoint", () => {
+    return request(app)
+      .get("/api/articlez")
+      .expect(404)
+      .then((response) => {
+        expect(response.body.msg).toBe("Path not found");
       });
   });
 });
