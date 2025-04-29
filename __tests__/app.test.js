@@ -124,6 +124,7 @@ describe("GET /api/articles/:article_id/comments", () => {
       .then((response) => {
         const comments = response.body.comments;
         expect(Array.isArray(comments)).toBe(true);
+        expect(comments).toHaveLength(11);
         comments.forEach((comment) => {
           expect(comment).toEqual(
             expect.objectContaining({
@@ -132,7 +133,7 @@ describe("GET /api/articles/:article_id/comments", () => {
               created_at: expect.any(String),
               author: expect.any(String),
               body: expect.any(String),
-              article_id: expect.any(Number),
+              article_id: 1,
             })
           );
         });
@@ -153,6 +154,62 @@ describe("GET /api/articles/:article_id/comments", () => {
       .expect(400)
       .then((response) => {
         expect(response.body.msg).toBe("Bad request");
+      });
+  });
+});
+
+describe("POST /api/articles/:article_id/comments", () => {
+  test("201: responds with the posted comment object", () => {
+    const newComment = {
+      username: "icellusedkars",
+      body: "Tehran is so Wild",
+    };
+
+    return request(app)
+      .post("/api/articles/1/comments")
+      .send(newComment)
+      .expect(201)
+      .then((response) => {
+        const comment = response.body.comment;
+        expect(comment).toEqual(
+          expect.objectContaining({
+            comment_id: expect.any(Number),
+            article_id: 1,
+            author: "icellusedkars",
+            body: "Tehran is so Wild",
+            votes: 0,
+            created_at: expect.any(String),
+          })
+        );
+      });
+  });
+
+  test("400: responds with an error when body is missing fields", () => {
+    const newComment = {
+      username: "icellusedkars",
+    };
+
+    return request(app)
+      .post("/api/articles/1/comments")
+      .send(newComment)
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Bad request");
+      });
+  });
+
+  test("404: responds with error when posting to non-existent article", () => {
+    const newComment = {
+      username: "icellusedkars",
+      body: "Tehran is so Wild",
+    };
+
+    return request(app)
+      .post("/api/articles/2000/comments")
+      .send(newComment)
+      .expect(404)
+      .then((response) => {
+        expect(response.body.msg).toBe("Path not found");
       });
   });
 });
