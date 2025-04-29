@@ -97,7 +97,7 @@ describe("GET /api/articles", () => {
       .then((response) => {
         const articles = response.body.articles;
         expect(Array.isArray(articles)).toBe(true);
-        expect(articles.length).toBeGreaterThan(0);
+        expect(articles).toHaveLength(13);
         articles.forEach((article) => {
           expect(article).toEqual(
             expect.objectContaining({
