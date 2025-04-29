@@ -4,6 +4,7 @@ const endpointsJson = require("../endpoints.json");
 const db = require("../db/connection");
 const data = require("../db/data/test-data/index");
 const seed = require("../db/seeds/seed");
+const { response } = require("express");
 
 beforeAll(() => seed(data));
 afterAll(() => db.end());
@@ -15,6 +16,17 @@ describe("GET /api", () => {
       .expect(200)
       .then(({ body: { endpoints } }) => {
         expect(endpoints).toEqual(endpointsJson);
+      });
+  });
+});
+
+describe("when the endpoint does not exist", () => {
+  test("404: responds with 'Path not found' when given an invalid endpoint", () => {
+    return request(app)
+      .get("/api/invalid")
+      .expect(404)
+      .then((response) => {
+        expect(response.body.msg).toBe("Path not found");
       });
   });
 });
@@ -34,26 +46,6 @@ describe("GET /api/topics", () => {
             })
           );
         });
-      });
-  });
-
-  test("404: responds with 'Not found' when the endpoint is incorrect", () => {
-    return request(app)
-      .get("/api/topiks")
-      .expect(404)
-      .then((response) => {
-        expect(response.body.msg).toBe("Path not found");
-      });
-  });
-});
-
-describe("when the endpoint does not exist", () => {
-  test("404: responds with 'Path not found' when given an invalid endpoint", () => {
-    return request(app)
-      .get("/api/invalid")
-      .expect(404)
-      .then((response) => {
-        expect(response.body.msg).toBe("Path not found");
       });
   });
 });
@@ -105,7 +97,7 @@ describe("GET /api/articles", () => {
       .then((response) => {
         const articles = response.body.articles;
         expect(Array.isArray(articles)).toBe(true);
-        expect(articles.length).toBeGreaterThan(0);
+        expect(articles).toHaveLength(13);
         articles.forEach((article) => {
           expect(article).toEqual(
             expect.objectContaining({
@@ -122,13 +114,45 @@ describe("GET /api/articles", () => {
         });
       });
   });
+});
 
-  test("404: responds with 'path not found' for invalid endpoint", () => {
+describe("GET /api/articles/:article_id/comments", () => {
+  test("200: responds with an array of comment objects for the given article_id", () => {
     return request(app)
-      .get("/api/articlez")
+      .get("/api/articles/1/comments")
+      .expect(200)
+      .then((response) => {
+        const comments = response.body.comments;
+        expect(Array.isArray(comments)).toBe(true);
+        comments.forEach((comment) => {
+          expect(comment).toEqual(
+            expect.objectContaining({
+              comment_id: expect.any(Number),
+              votes: expect.any(Number),
+              created_at: expect.any(String),
+              author: expect.any(String),
+              body: expect.any(String),
+              article_id: expect.any(Number),
+            })
+          );
+        });
+      });
+  });
+  test("404: responds with Not Found when the article_id does not exist", () => {
+    return request(app)
+      .get("/api/articles/2000/comments")
       .expect(404)
       .then((response) => {
         expect(response.body.msg).toBe("Path not found");
+      });
+  });
+
+  test("400: responds with Bad Request when the article_id is invalid", () => {
+    return request(app)
+      .get("/api/articles/aaa/comments")
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Bad request");
       });
   });
 });

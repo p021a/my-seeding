@@ -4,6 +4,7 @@ const {
   fetchTopics,
   receivedArticleById,
   fetchArticles,
+  fetchArticlesComments,
 } = require("../models/models");
 
 exports.getApi = (req, res) => {
@@ -35,6 +36,17 @@ exports.getArticles = (req, res, next) => {
   fetchArticles()
     .then((articles) => {
       res.status(200).send({ articles });
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
+exports.getArticlesComments = (req, res, next) => {
+  const { article_id } = req.params;
+  fetchArticlesComments(article_id)
+    .then((comments) => {
+      res.status(200).send({ comments });
     })
     .catch((err) => {
       next(err);
