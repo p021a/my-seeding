@@ -7,6 +7,7 @@ const {
   fetchArticlesComments,
   insertComment,
   updateArticleVotes,
+  removeCommentById,
 } = require("../models/models");
 
 exports.getApi = (req, res) => {
@@ -75,6 +76,18 @@ exports.patchArticleById = (req, res, next) => {
   updateArticleVotes(article_id, inc_votes)
     .then((article) => {
       res.status(200).send({ article });
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
+exports.deleteComment = (req, res, next) => {
+  const { comment_id } = req.params;
+
+  removeCommentById(comment_id)
+    .then((comment) => {
+      res.status(204).send();
     })
     .catch((err) => {
       next(err);
