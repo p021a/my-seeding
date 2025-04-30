@@ -245,3 +245,27 @@ describe("PATCH /api/articles/:article_id", () => {
       });
   });
 });
+
+describe("DELETE /api/comments/:comment_id", () => {
+  test("204: should delete a comment and respond with no content", () => {
+    return request(app).delete("/api/comments/1").expect(204);
+  });
+
+  test("400: invalid comment_id", () => {
+    return request(app)
+      .delete("/api/comments/one")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad request");
+      });
+  });
+
+  test("404: comment not found for given comment_id", () => {
+    return request(app)
+      .delete("/api/comments/2000")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Comment not found");
+      });
+  });
+});
