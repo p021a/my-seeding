@@ -8,6 +8,7 @@ const {
   insertComment,
   updateArticleVotes,
   removeCommentById,
+  fetchUsers,
 } = require("../models/models");
 
 exports.getApi = (req, res) => {
@@ -88,6 +89,16 @@ exports.deleteComment = (req, res, next) => {
   removeCommentById(comment_id)
     .then((comment) => {
       res.status(204).send();
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
+exports.getUsers = (req, res, next) => {
+  fetchUsers()
+    .then((users) => {
+      res.status(200).send({ users: users });
     })
     .catch((err) => {
       next(err);
