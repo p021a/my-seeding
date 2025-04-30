@@ -213,3 +213,35 @@ describe("POST /api/articles/:article_id/comments", () => {
       });
   });
 });
+
+describe("PATCH /api/articles/:article_id", () => {
+  test("200: should increment votes and return updated article", () => {
+    return request(app)
+      .patch("/api/articles/1")
+      .send({ inc_votes: 10 })
+      .expect(200)
+      .then(({ body }) => {
+        expect(typeof body.article).toBe("object");
+        expect(body.article.votes).toBe(110);
+      });
+  });
+
+  test("400: should respond with bad request for invalid inc_votes", () => {
+    return request(app)
+      .patch("/api/articles/1")
+      .send({ inc_votes: "two" })
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad request");
+      });
+  });
+
+  test("404: should respond with article not found for invalid id", () => {
+    return request(app)
+      .patch("/api/articles/2000")
+      .send({ inc_votes: 10 })
+      .then(({ body }) => {
+        expect(body.msg).toBe("Article not found");
+      });
+  });
+});

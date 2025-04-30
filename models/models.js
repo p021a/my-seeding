@@ -48,14 +48,29 @@ exports.fetchArticlesComments = (article_id) => {
 };
 
 exports.insertComment = (article_id, username, body) => {
-  console.log(body);
-
   return db
     .query(
       "INSERT INTO comments (author, article_id, body) VALUES ($1, $2, $3) RETURNING *;",
       [username, article_id, body]
     )
     .then((result) => {
+      return result.rows[0];
+    });
+};
+
+exports.updateArticleVotes = (article_id, inc_votes) => {
+  return db
+    .query(
+      "UPDATE articles SET votes = votes + $1 WHERE article_id = $2 RETURNING *;",
+      [inc_votes, article_id]
+    )
+    .then((result) => {
+      if (result.rows.length === 0) {
+        return Promise.reject({
+          status: 404,
+          msg: "Article not found",
+        });
+      }
       return result.rows[0];
     });
 };
