@@ -56,8 +56,6 @@ describe("GET /api/articles/:article_id", () => {
       .get("/api/articles/1")
       .expect(200)
       .then((response) => {
-        console.log(response.body);
-
         expect(response.body.article).toEqual({
           author: "butter_bridge",
           title: "Living in the shadow of a great man",
