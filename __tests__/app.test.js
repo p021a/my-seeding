@@ -92,7 +92,7 @@ describe("GET /api/articles/:article_id", () => {
 describe("GET /api/articles", () => {
   test("200: responds with an array of article objects, each containing correct properties", () => {
     return request(app)
-      .get("/api/articles")
+      .get("/api/articles?sort_by=created_at")
       .expect(200)
       .then((response) => {
         const articles = response.body.articles;
@@ -108,10 +108,50 @@ describe("GET /api/articles", () => {
               created_at: expect.any(String),
               votes: expect.any(Number),
               article_img_url: expect.any(String),
-              comment_count: expect.any(String),
+              comment_count: expect.any(Number),
             })
           );
         });
+      });
+  });
+
+  test("200: if sort_by query is sorted by created_at ascending", () => {
+    return request(app)
+      .get("/api/articles?sort_by=created_at&order=asc")
+      .expect(200)
+      .then((response) => {
+        const articles = response.body.articles;
+        expect(articles.length).toBeGreaterThan(0);
+        expect(articles).toBeSortedBy("created_at", { descending: false });
+      });
+  });
+
+  test("200: if sort_by query is sorted by votes descending", () => {
+    return request(app)
+      .get("/api/articles?sort_by=votes&order=desc")
+      .expect(200)
+      .then((response) => {
+        const articles = response.body.articles;
+        expect(articles.length).toBeGreaterThan(0);
+        expect(articles).toBeSortedBy("votes", { descending: true });
+      });
+  });
+
+  test("400: if sort_by query is invalid", () => {
+    return request(app)
+      .get("/api/articles?sort_by=invalid_column&order=asc")
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Invalid sort_by column");
+      });
+  });
+
+  test("400: if order query is invalid", () => {
+    return request(app)
+      .get("/api/articles?sort_by=created_at&order=invalid")
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Invalid order value");
       });
   });
 });
@@ -184,6 +224,33 @@ describe("POST /api/articles/:article_id/comments", () => {
       });
   });
 
+  test("201: responds with the posted comment object with additional properties", () => {
+    const newComment = {
+      username: "icellusedkars",
+      body: "Tehran is so Wild",
+      extra_property: "extra_value",
+    };
+
+    return request(app)
+      .post("/api/articles/1/comments")
+      .send(newComment)
+      .expect(201)
+      .then((response) => {
+        const comment = response.body.comment;
+        expect(comment).toEqual(
+          expect.objectContaining({
+            comment_id: expect.any(Number),
+            article_id: 1,
+            author: "icellusedkars",
+            body: "Tehran is so Wild",
+            votes: 0,
+            created_at: expect.any(String),
+          })
+        );
+        expect(comment).not.toHaveProperty("extra_property");
+      });
+  });
+
   test("400: responds with an error when body is missing fields", () => {
     const newComment = {
       username: "icellusedkars",
@@ -206,6 +273,36 @@ describe("POST /api/articles/:article_id/comments", () => {
 
     return request(app)
       .post("/api/articles/2000/comments")
+      .send(newComment)
+      .expect(404)
+      .then((response) => {
+        expect(response.body.msg).toBe("Path not found");
+      });
+  });
+
+  test("400: responds with Bad Request when article_id is invalid", () => {
+    const newComment = {
+      username: "icellusedkars",
+      body: "Nice article!",
+    };
+
+    return request(app)
+      .post("/api/articles/katherine/comments")
+      .send(newComment)
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Bad request");
+      });
+  });
+
+  test("404: responds with Not Found when username does not exist", () => {
+    const newComment = {
+      username: "nonexistent_user",
+      body: "Great post!",
+    };
+
+    return request(app)
+      .post("/api/articles/1/comments")
       .send(newComment)
       .expect(404)
       .then((response) => {
@@ -242,6 +339,16 @@ describe("PATCH /api/articles/:article_id", () => {
       .send({ inc_votes: 10 })
       .then(({ body }) => {
         expect(body.msg).toBe("Article not found");
+      });
+  });
+
+  test("400: should respond with bad request when inc_votes is missing", () => {
+    return request(app)
+      .patch("/api/articles/1")
+      .send({})
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad request");
       });
   });
 });

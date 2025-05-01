@@ -37,7 +37,9 @@ exports.getArticleById = (req, res, next) => {
 };
 
 exports.getArticles = (req, res, next) => {
-  fetchArticles()
+  const { sort_by, order } = req.query;
+
+  fetchArticles(sort_by, order)
     .then((articles) => {
       res.status(200).send({ articles });
     })
@@ -98,7 +100,7 @@ exports.deleteComment = (req, res, next) => {
 exports.getUsers = (req, res, next) => {
   fetchUsers()
     .then((users) => {
-      res.status(200).send({ users: users });
+      res.status(200).send({ users });
     })
     .catch((err) => {
       next(err);
