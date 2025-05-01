@@ -20,14 +20,39 @@ exports.receivedArticleById = (article_id) => {
     });
 };
 
-exports.fetchArticles = () => {
-  return db
-    .query(
-      "SELECT articles.author, articles.title, articles.article_id, articles.topic, articles.created_at, articles.votes, articles.article_img_url, COUNT (comments.comment_id) AS comment_count FROM articles LEFT JOIN comments ON comments.article_id = articles.article_id GROUP BY articles.article_id ORDER BY articles.created_at ASC"
-    )
-    .then((result) => {
-      return result.rows;
-    });
+exports.fetchArticles = (sort_by, order) => {
+  let queryStr = `
+    SELECT articles.author, articles.title, articles.article_id, articles.topic, articles.created_at, articles.votes, articles.article_img_url, COUNT(comments.comment_id)::INT AS comment_count FROM articles LEFT JOIN comments ON comments.article_id = articles.article_id GROUP BY articles.article_id`;
+
+  const validSortBy = [
+    "article_id",
+    "title",
+    "topic",
+    "author",
+    "created_at",
+    "votes",
+    "article_img_url",
+    "comment_count",
+  ];
+
+  if (sort_by && validSortBy.includes(sort_by)) {
+    queryStr += ` ORDER BY ${sort_by}`;
+  } else {
+    return Promise.reject({ status: 400, msg: "Invalid sort_by column" });
+  }
+
+  const validOrder = ["ASC", "DESC"];
+  if (order && validOrder.includes(order.toUpperCase())) {
+    queryStr += ` ${order.toUpperCase()}`;
+  } else if (order && !validOrder.includes(order.toUpperCase())) {
+    return Promise.reject({ status: 400, msg: "Invalid order value" });
+  } else {
+    queryStr += " DESC";
+  }
+
+  return db.query(queryStr).then((result) => {
+    return result.rows;
+  });
 };
 
 exports.fetchArticlesComments = (article_id) => {
@@ -59,6 +84,12 @@ exports.insertComment = (article_id, username, body) => {
 };
 
 exports.updateArticleVotes = (article_id, inc_votes) => {
+  if (typeof inc_votes !== "number") {
+    return Promise.reject({
+      status: 400,
+      msg: "Bad request",
+    });
+  }
   return db
     .query(
       "UPDATE articles SET votes = votes + $1 WHERE article_id = $2 RETURNING *;",

@@ -1,5 +1,5 @@
+const { toBeObject, toBeDate } = require("jest-extended");
 const { convertTimestampToDate, createRef } = require("../db/seeds/utils");
-
 describe("convertTimestampToDate", () => {
   test("returns a new object", () => {
     const timestamp = 1557572706232;
