@@ -51,11 +51,13 @@ describe("GET /api/topics", () => {
 });
 
 describe("GET /api/articles/:article_id", () => {
-  test("200: responds with an article object", () => {
+  test("200: responds with an article object, including comment_count", () => {
     return request(app)
       .get("/api/articles/1")
       .expect(200)
       .then((response) => {
+        console.log(response.body);
+
         expect(response.body.article).toEqual({
           author: "butter_bridge",
           title: "Living in the shadow of a great man",
@@ -66,6 +68,7 @@ describe("GET /api/articles/:article_id", () => {
           votes: 100,
           article_img_url:
             "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+          comment_count: 11,
         });
       });
   });
