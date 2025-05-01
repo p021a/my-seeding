@@ -20,9 +20,24 @@ exports.receivedArticleById = (article_id) => {
     });
 };
 
-exports.fetchArticles = (sort_by, order) => {
+exports.fetchArticles = (sort_by, order, topic) => {
+  let queryArgs = [];
+  const promiseArray = [];
+  let queryCount = 0;
+
   let queryStr = `
-    SELECT articles.author, articles.title, articles.article_id, articles.topic, articles.created_at, articles.votes, articles.article_img_url, COUNT(comments.comment_id)::INT AS comment_count FROM articles LEFT JOIN comments ON comments.article_id = articles.article_id GROUP BY articles.article_id`;
+    SELECT articles.author, articles.title, articles.article_id, articles.topic, articles.created_at, articles.votes, articles.article_img_url, COUNT(comments.comment_id)::INT AS comment_count FROM articles LEFT JOIN comments ON comments.article_id = articles.article_id`;
+
+  if (topic) {
+    queryCount++;
+    queryStr += ` WHERE articles.topic = $${queryCount}`;
+    queryArgs.push(topic);
+    promiseArray.push(
+      db.query(`SELECT * FROM topics WHERE slug = $1`, [topic])
+    );
+  }
+
+  queryStr += ` GROUP BY articles.article_id`;
 
   const validSortBy = [
     "article_id",
@@ -42,6 +57,7 @@ exports.fetchArticles = (sort_by, order) => {
   }
 
   const validOrder = ["ASC", "DESC"];
+
   if (order && validOrder.includes(order.toUpperCase())) {
     queryStr += ` ${order.toUpperCase()}`;
   } else if (order && !validOrder.includes(order.toUpperCase())) {
@@ -50,8 +66,14 @@ exports.fetchArticles = (sort_by, order) => {
     queryStr += " DESC";
   }
 
-  return db.query(queryStr).then((result) => {
-    return result.rows;
+  promiseArray.unshift(db.query(queryStr, queryArgs));
+
+  return Promise.all(promiseArray).then((results) => {
+    if (topic && results[1].rowCount === 0) {
+      return Promise.reject({ status: 404, msg: "Topic not found" });
+    }
+    const queryResult = results[0];
+    return queryResult.rows;
   });
 };
 

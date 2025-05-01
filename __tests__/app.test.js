@@ -154,6 +154,59 @@ describe("GET /api/articles", () => {
         expect(response.body.msg).toBe("Invalid order value");
       });
   });
+
+  test("200: responds with an array of articles filtered by topic", () => {
+    return request(app)
+      .get("/api/articles?topic=mitch&sort_by=created_at&order=asc")
+      .expect(200)
+      .then((response) => {
+        console.log(response.body);
+        const articles = response.body.articles;
+        expect(Array.isArray(articles)).toBe(true);
+        expect(articles.length).toBeGreaterThan(0);
+        articles.forEach((article) => {
+          expect(article.topic).toBe("mitch");
+        });
+      });
+  });
+
+  test("200: responds with an array of all articles if no topic is provided", () => {
+    return request(app)
+      .get("/api/articles?sort_by=created_at&order=asc")
+      .expect(200)
+      .then((response) => {
+        const articles = response.body.articles;
+        expect(Array.isArray(articles)).toBe(true);
+        expect(articles.length).toBeGreaterThan(0);
+      });
+  });
+
+  test("404: responds with a 'Topic not found' error for invalid topic", () => {
+    return request(app)
+      .get("/api/articles?topic=nonexistent&sort_by=created_at&order=asc")
+      .expect(404)
+      .then((response) => {
+        expect(response.body.msg).toBe("Topic not found");
+      });
+  });
+
+  test("400: responds with an 'Invalid sort_by column' error for invalid sort_by", () => {
+    return request(app)
+      .get("/api/articles?topic=mitch&sort_by=invalid_column&order=asc")
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Invalid sort_by column");
+      });
+  });
+
+  test("400: responds with an 'Invalid order value' error for invalid order", () => {
+    return request(app)
+      .get("/api/articles?topic=mitch&sort_by=created_at&order=invalid")
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Invalid order value");
+      });
+  });
 });
 
 describe("GET /api/articles/:article_id/comments", () => {
