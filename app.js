@@ -1,6 +1,8 @@
 const express = require("express");
 const app = express();
 const db = require("./db/connection");
+const usersRouter = require("./routes/users-router");
+const cors = require("cors");
 const {
   getApi,
   getTopics,
@@ -13,7 +15,7 @@ const {
   getUsers,
 } = require("./controllers/controllers");
 
-app.use(express.json());
+app.use(express.json(), cors());
 
 app.get("/api", getApi);
 
@@ -32,6 +34,8 @@ app.patch("/api/articles/:article_id", patchArticleById);
 app.delete("/api/comments/:comment_id", deleteComment);
 
 app.get("/api/users", getUsers);
+
+app.use("/api/users", usersRouter);
 
 app.all("/*splat", (req, res) => {
   res.status(404).send({ msg: "Path not found" });
