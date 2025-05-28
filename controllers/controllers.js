@@ -10,6 +10,7 @@ const {
   removeCommentById,
   fetchUsers,
   fetchUserByUsername,
+  updateCommentById,
 } = require("../models/models");
 
 exports.getApi = (req, res) => {
@@ -117,4 +118,19 @@ exports.getUserByUsername = (req, res, next) => {
     .catch((err) => {
       next(err);
     });
+};
+
+exports.patchCommentById = (req, res, next) => {
+  const { comment_id } = req.params;
+  const { inc_votes } = req.body;
+
+  if (typeof inc_votes !== "number") {
+    return res.status(400).send({ msg: "Bad request" });
+  }
+
+  updateCommentById(comment_id, inc_votes)
+    .then((updatedComment) => {
+      res.status(200).send({ comment: updatedComment });
+    })
+    .catch(next);
 };

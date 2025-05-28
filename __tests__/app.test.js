@@ -472,3 +472,38 @@ describe("GET /api/users/:username", () => {
       });
   });
 });
+
+describe("PATCH /api/comments/:comment_id", () => {
+  test("200: should update the comment's votes and respond with updated comment", () => {
+    return request(app)
+      .patch("/api/comments/2")
+      .send({ inc_votes: 1 })
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.comment).toMatchObject({
+          comment_id: 2,
+          votes: expect.any(Number),
+        });
+      });
+  });
+
+  test("400: invalid inc_votes type", () => {
+    return request(app)
+      .patch("/api/comments/1")
+      .send({ inc_votes: "wrong" })
+      .expect(400)
+      .then(({ body }) => {
+        expect(body).toEqual({ msg: "Bad request" });
+      });
+  });
+
+  test("404: non-existent comment_id", () => {
+    return request(app)
+      .patch("/api/comments/9999")
+      .send({ inc_votes: 1 })
+      .expect(404)
+      .then(({ body }) => {
+        expect(body).toEqual({ msg: "Comment not found" });
+      });
+  });
+});

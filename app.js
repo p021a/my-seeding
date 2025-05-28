@@ -21,10 +21,6 @@ app.use("/api/articles", articlesRouter);
 
 app.use("/api/comments", commentsRouter);
 
-app.all("/*splat", (req, res) => {
-  res.status(404).send({ msg: "Path not found" });
-});
-
 app.use((err, req, res, next) => {
   if (err.status && err.msg) {
     return res.status(err.status).send({ msg: err.msg });
@@ -35,6 +31,10 @@ app.use((err, req, res, next) => {
   } else {
     return res.status(500).send({ msg: "Internal Server Error" });
   }
+});
+
+app.all("/*splat", (req, res) => {
+  res.status(404).send({ msg: "Path not found" });
 });
 
 module.exports = app;

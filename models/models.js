@@ -50,8 +50,10 @@ exports.fetchArticles = (sort_by, order, topic) => {
     "comment_count",
   ];
 
-  if (sort_by && validSortBy.includes(sort_by)) {
-    queryStr += ` ORDER BY ${sort_by}`;
+  const sortBy = sort_by || "created_at";
+
+  if (validSortBy.includes(sortBy)) {
+    queryStr += ` ORDER BY ${sortBy}`;
   } else {
     return Promise.reject({ status: 400, msg: "Invalid sort_by column" });
   }
@@ -158,6 +160,25 @@ exports.fetchUserByUsername = (username) => {
     .then((result) => {
       if (result.rows.length === 0) {
         return Promise.reject({ status: 404, msg: "User not found" });
+      }
+      return result.rows[0];
+    });
+};
+
+exports.updateCommentById = (comment_id, inc_votes) => {
+  return db
+    .query(
+      `
+      UPDATE comments
+      SET votes = votes + $1
+      WHERE comment_id = $2
+      RETURNING *;
+      `,
+      [inc_votes, comment_id]
+    )
+    .then((result) => {
+      if (result.rows.length === 0) {
+        return Promise.reject({ status: 404, msg: "Comment not found" });
       }
       return result.rows[0];
     });
