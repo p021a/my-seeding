@@ -161,7 +161,6 @@ describe("GET /api/articles", () => {
       .get("/api/articles?topic=mitch&sort_by=created_at&order=asc")
       .expect(200)
       .then((response) => {
-        console.log(response.body);
         const articles = response.body.articles;
         expect(Array.isArray(articles)).toBe(true);
         expect(articles.length).toBeGreaterThan(0);
@@ -449,6 +448,27 @@ describe("GET /api/users", () => {
             })
           );
         });
+      });
+  });
+});
+
+describe("GET /api/users/:username", () => {
+  test("200: should return user data if username exists", () => {
+    return request(app)
+      .get("/api/users/icellusedkars")
+      .expect(200)
+      .then((res) => {
+        expect(res.body).toHaveProperty("user");
+        expect(res.body.user).toHaveProperty("username", "icellusedkars");
+      });
+  });
+
+  test("404: should return 404 if username not found", () => {
+    return request(app)
+      .get("/api/users/not_exist")
+      .expect(404)
+      .then((res) => {
+        expect(res.body).toHaveProperty("msg", "User not found");
       });
   });
 });

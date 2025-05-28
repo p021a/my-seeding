@@ -6,7 +6,12 @@
     "description": "serves an array of all topics",
     "queries": [],
     "exampleResponse": {
-      "topics": [{ "slug": "football", "description": "Footie!" }]
+      "topics": [
+        {
+          "slug": "football",
+          "description": "Footie!"
+        }
+      ]
     }
   },
   "GET /api/articles": {
@@ -22,6 +27,94 @@
           "comment_count": 6
         }
       ]
+    }
+  },
+  "GET /api/articles/:article_id": {
+    "description": "serves an article object by given article_id",
+    "exampleResponse": {
+      "article": {
+        "article_id": 1,
+        "title": "Running a Node App",
+        "topic": "coding",
+        "author": "jessjelly",
+        "body": "This is part two of a series on how to get up and running with Node...",
+        "created_at": "2020-11-07T00:00:00.000Z",
+        "votes": 0,
+        "comment_count": 8
+      }
+    }
+  },
+  "GET /api/articles/:article_id/comments": {
+    "description": "serves an array of comments for the given article_id",
+    "exampleResponse": {
+      "comments": [
+        {
+          "comment_id": 1,
+          "body": "Great article!",
+          "votes": 10,
+          "author": "butter_bridge",
+          "created_at": "2017-11-22T12:36:03.389Z"
+        }
+      ]
+    }
+  },
+  "POST /api/articles/:article_id/comments": {
+    "description": "posts a new comment to the given article_id",
+    "exampleRequest": {
+      "username": "butter_bridge",
+      "body": "This article is fantastic!"
+    },
+    "exampleResponse": {
+      "comment": {
+        "comment_id": 19,
+        "body": "This article is fantastic!",
+        "author": "butter_bridge",
+        "votes": 0,
+        "created_at": "2025-05-16T12:00:00.000Z",
+        "article_id": 1
+      }
+    }
+  },
+  "PATCH /api/articles/:article_id": {
+    "description": "updates the votes property of the given article",
+    "exampleRequest": {
+      "inc_votes": 1
+    },
+    "exampleResponse": {
+      "article": {
+        "article_id": 1,
+        "title": "Running a Node App",
+        "topic": "coding",
+        "author": "jessjelly",
+        "body": "This is part two of a series...",
+        "created_at": "2020-11-07T00:00:00.000Z",
+        "votes": 1,
+        "comment_count": 8
+      }
+    }
+  },
+  "DELETE /api/comments/:comment_id": {
+    "description": "deletes the comment with the given comment_id",
+    "exampleResponse": {
+      "msg": "Comment deleted"
+    }
+  },
+  "GET /api/users": {
+    "description": "serves an array of all users",
+    "exampleResponse": {
+      "users": [
+        {
+          "username": "butter_bridge",
+          "name": "Jonny",
+          "avatar_url": "https://www.example.com/avatar.jpg"
+        }
+      ]
+    }
+  },
+  "ALL /*": {
+    "description": "handles all invalid paths",
+    "exampleResponse": {
+      "msg": "Path not found"
     }
   }
 }
